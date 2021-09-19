@@ -18,8 +18,8 @@ DEPENDS = "\
     wayland-protocols \
     "
 
-SRC_URI = "gitsm://source.puri.sm/Librem5/phoc.git;protocol=http;branch=${BRANCH}"
-SRCREV = "f26fa0123742ba95d303ad552fc1f8d2d0117288"
+SRC_URI = "gitsm://gitlab.gnome.org/World/Phosh/phoc.git;protocol=http;branch=${BRANCH}"
+SRCREV = "03b7142b91dcd4f23745cad802c11a23d673ee56"
 BRANCH = "master"
 
 S = "${WORKDIR}/git"
@@ -32,4 +32,4 @@ inherit meson features_check gsettings
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl"
 
-RDEPENDS_${PN} += "mutter-gsettings"
+RDEPENDS:${PN} += "mutter-gsettings"
