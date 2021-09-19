@@ -7,3 +7,5 @@ $ git clone https://github.com/siemens/kas
 $ git clone https://github.com/moto-timo/meta-phosh
 $ KAS_BUILD_DIR=build-phosh ./kas/kas-container build ./meta-phosh/kas/raspberrypi4-64.yml
 ```
+
+The default PIN is `1234` as set in `kas/base.yml` (for the `phosh` user).
