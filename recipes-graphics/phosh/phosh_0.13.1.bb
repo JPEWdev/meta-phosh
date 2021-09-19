@@ -22,13 +22,13 @@ DEPENDS = "\
     "
 
 SRC_URI = "\
-    gitsm://source.puri.sm/Librem5/phosh.git;protocol=https;branch=${BRANCH} \
+    gitsm://gitlab.gnome.org/World/Phosh/phosh.git;protocol=https;branch=${BRANCH} \
     file://phosh-user-override.conf \
     file://phoc.ini \
     file://phosh.pam \
     "
-SRCREV = "44f447ab6e3d4943311fa13db6f65a6d5627b34c"
-BRANCH = "master"
+SRCREV = "a60fa3fa121a62fbbd8edd1a7d6454599d0f76a6"
+BRANCH = "main"
 
 S = "${WORKDIR}/git"
 
@@ -36,7 +36,7 @@ inherit meson features_check gettext gsettings systemd useradd
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl systemd"
 
-do_install_append() {
+do_install:append() {
     install -Dm 644 ${S}/data/phosh.service \
         ${D}${systemd_system_unitdir}/phosh.service
 
@@ -54,16 +54,16 @@ do_install_append() {
 
 USERADD_PACKAGES = "${PN}"
 
-USERADD_PARAM_${PN} = "--system --home /home/phosh -M --shell /bin/sh --user-group phosh"
-SYSTEMD_SERVICE_${PN} = "phosh.service"
-FILES_${PN} += "\
+USERADD_PARAM:${PN} = "--system --home /home/phosh -M --shell /bin/sh --user-group phosh"
+SYSTEMD_SERVICE:${PN} = "phosh.service"
+FILES:${PN} += "\
     ${datadir}/gnome-session \
     ${datadir}/wayland-sessions \
     ${systemd_system_unitdir}/phosh.service.d \
     /home/phosh \
     ${sysconfdir}/phosh/phoc.ini \
     "
-RDEPENDS_${PN} += "\
+RDEPENDS:${PN} += "\
     gnome-session \
     gnome-shell-gsettings \
     phoc \
