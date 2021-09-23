@@ -21,6 +21,8 @@ inherit meson gobject-introspection-data pkgconfig
 
 DEPENDS = "glib-2.0-native alsa-lib pulseaudio"
 
+RDEPENDS:${PN} += " pulseaudio-server"
+
 FILES:${PN} += " \
     ${datadir}/dbus-1 \
 "
