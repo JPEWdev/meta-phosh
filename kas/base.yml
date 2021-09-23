@@ -10,7 +10,7 @@ header:
 # The machine as it is written into the `local.conf` of bitbake.
 machine: qemux86-64
 
-target: core-image-weston
+target: core-image-phosh
 
 # The distro name as it is written into the `local.conf` of bitbake.
 distro: poky
@@ -71,9 +71,6 @@ local_conf_header:
     DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
     VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
     NETWORK_MANAGER = "systemd"
-
-  phosh: |
-    IMAGE_INSTALL:append = " phosh"
 
   default_passcode: |
     # mkpasswd -m sha512crypt
