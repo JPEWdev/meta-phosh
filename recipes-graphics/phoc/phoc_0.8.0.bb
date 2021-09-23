@@ -34,4 +34,4 @@ REQUIRED_DISTRO_FEATURES = "wayland opengl"
 
 # TODO: determine what is actually needed here
 #RDEPENDS:${PN} += "mutter-gsettings"
-RDEPENDS:${PN} += "mutter"
+RDEPENDS:${PN} += "mutter iso-codes"
