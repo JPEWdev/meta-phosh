@@ -16,6 +16,7 @@ DEPENDS = "\
     wayland \
     wayland-native \
     wayland-protocols \
+    weston \
     "
 
 SRC_URI = "gitsm://gitlab.gnome.org/World/Phosh/phoc.git;protocol=http;branch=${BRANCH}"
@@ -34,4 +35,8 @@ REQUIRED_DISTRO_FEATURES = "wayland opengl"
 
 # TODO: determine what is actually needed here
 #RDEPENDS:${PN} += "mutter-gsettings"
-RDEPENDS:${PN} += "mutter iso-codes"
+RDEPENDS:${PN} += " \
+    iso-codes \
+    libweston-9 \
+    mutter \
+    "
