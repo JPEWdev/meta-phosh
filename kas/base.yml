@@ -78,4 +78,6 @@ local_conf_header:
     INHERIT += "extrausers"
     EXTRA_USERS_PARAMS = "usermod -p '\$6\$HuoBc4fk6RuNTRRN\$AWcXL6LR5XXnWTtqVDTsPlg/GXOC9VpWyfaG6jfLTIbQ0ZbGbspavt7VFj3p/RwSDIdNKuW.haroPlCyktm.0.' phosh;"
 
+  locales: |
+    IMAGE_LINGUAS = "en-us"
 
