@@ -65,6 +65,7 @@ FILES:${PN} += "\
     ${sysconfdir}/phosh/phoc.ini \
     "
 RDEPENDS:${PN} += "\
+    gnome-backgrounds \
     gnome-session \
     gnome-shell-gsettings \
     phoc \
