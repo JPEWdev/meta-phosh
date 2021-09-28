@@ -69,5 +69,6 @@ RDEPENDS:${PN} += "\
     gnome-session \
     gnome-shell-gsettings \
     phoc \
+    xkbcomp \
     xkeyboard-config \
     "
