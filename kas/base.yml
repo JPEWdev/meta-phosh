@@ -63,7 +63,7 @@ local_conf_header:
         ABORT,/tmp,10M,1K"
 
   distro_features: |
-    DISTRO_FEATURES:append = " opengl pam polkit wayland"
+    DISTRO_FEATURES:append = " opengl pam polkit pulseaudio gobject-introspection-data wayland x11"
 
   systemd_config: |
     DISTRO_FEATURES:append = " systemd"
