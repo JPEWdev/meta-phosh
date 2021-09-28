@@ -32,4 +32,4 @@ inherit meson features_check gsettings
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl"
 
-RDEPENDS_${PN} += "mutter-gsettings"
+#RDEPENDS:${PN} += "mutter-gsettings"
