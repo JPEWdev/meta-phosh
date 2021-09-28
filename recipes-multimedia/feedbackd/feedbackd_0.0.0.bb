@@ -25,5 +25,5 @@ inherit meson gobject-introspection gsettings vala
 GIR_MESON_ENABLE_FLAG = 'enabled'
 GIR_MESON_DISABLE_FLAG = 'disabled'
 
-FILES_${PN} += "${datadir}/dbus-1/*"
+FILES:${PN} += "${datadir}/dbus-1/*"
 

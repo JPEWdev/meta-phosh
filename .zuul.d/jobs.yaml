@@ -1,0 +1,30 @@
+- job:
+    name: phosh-base
+    abstract: true
+    timeout: 36000
+    run:
+      - playbooks/build-phosh.yaml
+    vars: {}
+    required-projects:
+      - name: poky
+      - name: meta-openembedded
+    nodeset:
+      nodes:
+        - name: phosh-build-node
+          label: pod-ubuntu-focal-10c20g
+
+- job:
+    name: phosh-qemux86-64
+    parent: phosh-base
+    vars:
+      phosh_machine: qemux86-64
+
+- job:
+    name: phosh-raspberrypi4-64
+    parent: phosh-base
+    required-projects:
+      - name: meta-raspberrypi
+    vars:
+      phosh_machine: raspberrypi4-64
+      phosh_extra_layers:
+        - "{{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/meta-raspberrypi'].src_dir }}"

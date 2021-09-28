@@ -36,7 +36,7 @@ inherit meson features_check gettext gsettings systemd useradd
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl systemd"
 
-do_install_append() {
+do_install:append() {
     install -Dm 644 ${S}/data/phosh.service \
         ${D}${systemd_system_unitdir}/phosh.service
 
@@ -54,16 +54,16 @@ do_install_append() {
 
 USERADD_PACKAGES = "${PN}"
 
-USERADD_PARAM_${PN} = "--system --home /home/phosh -M --shell /bin/sh --user-group phosh"
-SYSTEMD_SERVICE_${PN} = "phosh.service"
-FILES_${PN} += "\
+USERADD_PARAM:${PN} = "--system --home /home/phosh -M --shell /bin/sh --user-group phosh"
+SYSTEMD_SERVICE:${PN} = "phosh.service"
+FILES:${PN} += "\
     ${datadir}/gnome-session \
     ${datadir}/wayland-sessions \
     ${systemd_system_unitdir}/phosh.service.d \
     /home/phosh \
     ${sysconfdir}/phosh/phoc.ini \
     "
-RDEPENDS_${PN} += "\
+RDEPENDS:${PN} += "\
     gnome-session \
     gnome-shell-gsettings \
     phoc \
