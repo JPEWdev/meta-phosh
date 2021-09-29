@@ -4,7 +4,9 @@
     timeout: 36000
     run:
       - playbooks/build-phosh.yaml
-    vars: {}
+    vars:
+      phosh_archive_deploy_url: http://yocto-cache.yocto-build.svc.cluster.local/deploy/
+      phosh_archive_deploy_dir: /mnt/cache/yocto/deploy
     required-projects:
       - name: poky
       - name: meta-openembedded
@@ -14,10 +16,28 @@
           label: pod-ubuntu-focal-10c20g
 
 - job:
+    name: phosh-labgrid-test
+    parent: labgrid-test
+    abstract: true
+    secrets:
+      - name: ssh_key
+        secret: phosh-labgrid-ssh-key
+        pass-to-parent: true
+
+- job:
     name: phosh-qemux86-64
     parent: phosh-base
     vars:
       phosh_machine: qemux86-64
+
+- job:
+    name: phosh-qemux86-64-test
+    parent: phosh-labgrid-test
+    dependencies:
+      - phosh-qemux86-64
+    vars:
+      labgrid_pytest_env: "ci/qemux86-64/env.yaml"
+      labgrid_pytest_args: "ci/qemux86-64"
 
 - job:
     name: phosh-raspberrypi4-64
@@ -28,3 +48,15 @@
       phosh_machine: raspberrypi4-64
       phosh_extra_layers:
         - "{{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/meta-raspberrypi'].src_dir }}"
+      phosh_extra_local_conf: |
+        ENABLE_UART = "1"
+
+- job:
+    name: phosh-raspberrypi4-64-test
+    parent: phosh-labgrid-test
+    dependencies:
+      - phosh-raspberrypi4-64
+    vars:
+      labgrid_reservation: "product=raspberrypi4"
+      labgrid_pytest_env: "ci/raspberrypi4/env.yaml"
+      labgrid_pytest_args: "ci/raspberrypi4"
