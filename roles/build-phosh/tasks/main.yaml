@@ -77,10 +77,16 @@
 
       IMAGE_LINGUAS = "en-us"
 
+      {{ phosh_extra_local_conf }}
+
+- name: Show local.conf
+  ansible.builtin.command:
+    cmd: "cat {{ phosh_build_dir }}/conf/local.conf"
+
 - name: Build
   shell: |
     set -e
     .  {{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/oe-init-build-env {{ phosh_build_dir }}
 
-    bitbake phosh phoc
+    bitbake phosh phoc core-image-minimal
 
