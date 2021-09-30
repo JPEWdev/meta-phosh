@@ -10,6 +10,7 @@
     required-projects:
       - name: poky
       - name: meta-openembedded
+      - name: JPEWdev/meta-phosh
     nodeset:
       nodes:
         - name: phosh-build-node
