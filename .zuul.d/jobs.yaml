@@ -9,11 +9,8 @@
       phosh_archive_deploy_dir: /mnt/cache/yocto/deploy
     required-projects:
       - name: poky
-        override-checkout: master
       - name: meta-openembedded
-        override-checkout: master
       - name: JPEWdev/meta-phosh
-        override-checkout: main
     nodeset:
       nodes:
         - name: phosh-build-node
