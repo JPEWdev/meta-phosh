@@ -14,7 +14,7 @@
     nodeset:
       nodes:
         - name: phosh-build-node
-          label: pod-ubuntu-focal-10c20g
+          label: pod-ubuntu-focal-huge
 
 - job:
     name: phosh-labgrid-test
