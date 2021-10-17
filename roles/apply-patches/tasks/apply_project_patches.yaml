@@ -1,0 +1,15 @@
+- name: Find patch files
+  find:
+    paths: "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}/patches/{{ item.value.short_name }}"
+    patterns: "*.patch"
+  register: patch_files
+
+- name: Apply patches
+  shell: |
+    set -e
+    git am {{ patch }}
+  args:
+    chdir: "{{ item.value.src_dir }}"
+  loop: "{{ patch_files.files|map(attribute='path')|list }}"
+  loop_control:
+    loop_var: patch
