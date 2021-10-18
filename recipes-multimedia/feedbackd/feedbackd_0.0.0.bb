@@ -20,7 +20,7 @@ BRANCH = "master"
 
 S = "${WORKDIR}/git"
 
-inherit meson gobject-introspection gsettings vala
+inherit meson gobject-introspection gsettings vala pkgconfig
 
 GIR_MESON_ENABLE_FLAG = 'enabled'
 GIR_MESON_DISABLE_FLAG = 'disabled'
