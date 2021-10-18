@@ -29,7 +29,7 @@ PACKAGECONFIG ??= "${@bb.utils.contains('DISTRO_FEATURES','x11','xwayland','',d)
 
 PACKAGECONFIG[xwayland] = "-Dxwayland=enabled,-Dxwayland=disabled,"
 
-inherit meson features_check gsettings
+inherit meson features_check gsettings pkgconfig
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl"
 
