@@ -33,7 +33,7 @@ BRANCH = "main"
 
 S = "${WORKDIR}/git"
 
-inherit meson features_check gettext gsettings systemd useradd
+inherit meson features_check gettext gsettings systemd useradd pkgconfig
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl systemd"
 
