@@ -57,8 +57,8 @@
       SSTATE_DIR = "/mnt/cache/yocto/sstate"
       DL_DIR = "/mnt/cache/yocto/downloads"
 
-      PARALLEL_MAKE = "-j 10"
-      BB_NUMBER_THREADS = "10"
+      PARALLEL_MAKE = "-j 9"
+      BB_NUMBER_THREADS = "9"
 
       BB_TASK_NICE_LEVEL = "10"
 
