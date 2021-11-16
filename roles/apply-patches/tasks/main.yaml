@@ -1,0 +1,4 @@
+- name: Apply patches
+  include: apply_project_patches.yaml
+  with_dict: "{{ zuul.projects }}"
+

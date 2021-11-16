@@ -1,0 +1,23 @@
+- name: Create deploy directory
+  ansible.builtin.file:
+    path: "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}"
+    state: directory
+    mode: "0755"
+
+- name: Deploy artifacts
+  shell: |
+    set -e
+    cd tmp/deploy
+    find . -path '*/images/*' | tar -I pzstd --files-from - -cvf "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
+  args:
+    chdir: "{{ phosh_build_dir }}"
+    executable: /bin/bash
+
+- name: Report artifacts
+  zuul_return:
+    data:
+      zuul:
+        artifacts:
+          - name: deploy
+            url: "{{ phosh_archive_deploy_url }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
+
