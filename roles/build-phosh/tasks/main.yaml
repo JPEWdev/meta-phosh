@@ -88,5 +88,5 @@
     set -e
     .  {{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/oe-init-build-env {{ phosh_build_dir }}
 
-    bitbake -k core-image-phosh
+    bitbake -k core-image-phosh core-image-phosh-gnome
   async: 28800
