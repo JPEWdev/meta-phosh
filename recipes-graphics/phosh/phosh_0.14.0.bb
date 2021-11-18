@@ -28,7 +28,7 @@ SRC_URI = "\
     file://phoc.ini \
     file://phosh.pam \
     "
-SRCREV = "a60fa3fa121a62fbbd8edd1a7d6454599d0f76a6"
+SRCREV = "1cc89414893665a0821d15d83c6e3b4789ac5cae"
 BRANCH = "main"
 
 S = "${WORKDIR}/git"

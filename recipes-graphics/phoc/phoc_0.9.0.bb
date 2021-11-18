@@ -20,7 +20,7 @@ DEPENDS = "\
     "
 
 SRC_URI = "gitsm://gitlab.gnome.org/World/Phosh/phoc.git;protocol=http;branch=${BRANCH}"
-SRCREV = "03b7142b91dcd4f23745cad802c11a23d673ee56"
+SRCREV = "0563907a884f4edb9f0a84dcefb52dccc3407c10"
 BRANCH = "master"
 
 S = "${WORKDIR}/git"
