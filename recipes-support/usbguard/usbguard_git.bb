@@ -10,10 +10,11 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=8264535c0c4e9c6c335635c4026a8022 \
                     file://src/ThirdParty/Catch/LICENSE_1_0.txt;md5=e4224ccaecb14d942c71d31bef20d78c \
                     file://src/ThirdParty/PEGTL/LICENSE;md5=5b6701671289d12b7ffa69138832c006"
 
-SRC_URI = "gitsm://github.com/USBGuard/usbguard.git;protocol=https"
+SRC_URI = "gitsm://github.com/USBGuard/usbguard.git;protocol=https;branch=${BRANCH}"
 
 PV = "1.0.0+git${SRCPV}"
 SRCREV = "d71d5faa7340baa25b25745026f581c82adbb0c7"
+BRANCH = "master"
 
 S = "${WORKDIR}/git"
 
