@@ -7,14 +7,13 @@ LICENSE = "MIT"
 inherit core-image
 
 CORE_IMAGE_BASE_INSTALL += "\
+    packagegroup-phosh-essential \
     gtk+3-demo \
-    phosh \
     epiphany \
     puzzles \
     pcmanfm \
     l3afpad \
     gst-examples \
-    gnome-control-center \
     "
 CORE_IMAGE_BASE_INSTALL += "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'weston-xwayland matchbox-terminal', '', d)}"
 
