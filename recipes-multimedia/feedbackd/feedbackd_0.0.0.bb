@@ -15,7 +15,7 @@ DEPENDS = "\
     "
 
 SRC_URI = "git://source.puri.sm/Librem5/feedbackd.git;protocol=https;branch=${BRANCH}"
-SRCREV = "aac3306ad5e24ca46e1ca402a478f505b01b351e"
+SRCREV = "587cbf31889f1e26d818e36915cfe0577dc0272f"
 BRANCH = "master"
 
 S = "${WORKDIR}/git"

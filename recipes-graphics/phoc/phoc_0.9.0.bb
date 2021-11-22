@@ -16,10 +16,11 @@ DEPENDS = "\
     wayland \
     wayland-native \
     wayland-protocols \
+    weston \
     "
 
-SRC_URI = "gitsm://source.puri.sm/Librem5/phoc.git;protocol=http;branch=${BRANCH}"
-SRCREV = "f26fa0123742ba95d303ad552fc1f8d2d0117288"
+SRC_URI = "gitsm://gitlab.gnome.org/World/Phosh/phoc.git;protocol=http;branch=${BRANCH}"
+SRCREV = "0563907a884f4edb9f0a84dcefb52dccc3407c10"
 BRANCH = "master"
 
 S = "${WORKDIR}/git"
@@ -32,4 +33,10 @@ inherit meson features_check gsettings pkgconfig
 
 REQUIRED_DISTRO_FEATURES = "wayland opengl"
 
+# TODO: determine what is actually needed here
 #RDEPENDS:${PN} += "mutter-gsettings"
+RDEPENDS:${PN} += " \
+    iso-codes \
+    libweston-9 \
+    mutter \
+    "

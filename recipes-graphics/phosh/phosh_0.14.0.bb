@@ -5,6 +5,7 @@ SECTION = "wayland/shell"
 LIC_FILES_CHKSUM = "file://${S}/COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
 DEPENDS = "\
+    callaudiod \
     feedbackd \
     gcr \
     glib-2.0 \
@@ -22,13 +23,13 @@ DEPENDS = "\
     "
 
 SRC_URI = "\
-    gitsm://source.puri.sm/Librem5/phosh.git;protocol=https;branch=${BRANCH} \
+    gitsm://gitlab.gnome.org/World/Phosh/phosh.git;protocol=https;branch=${BRANCH} \
     file://phosh-user-override.conf \
     file://phoc.ini \
     file://phosh.pam \
     "
-SRCREV = "44f447ab6e3d4943311fa13db6f65a6d5627b34c"
-BRANCH = "master"
+SRCREV = "1cc89414893665a0821d15d83c6e3b4789ac5cae"
+BRANCH = "main"
 
 S = "${WORKDIR}/git"
 
@@ -64,8 +65,10 @@ FILES:${PN} += "\
     ${sysconfdir}/phosh/phoc.ini \
     "
 RDEPENDS:${PN} += "\
+    gnome-backgrounds \
     gnome-session \
     gnome-shell-gsettings \
     phoc \
+    xkbcomp \
     xkeyboard-config \
     "

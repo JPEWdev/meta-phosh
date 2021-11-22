@@ -76,7 +76,7 @@
       EXTRA_USERS_PARAMS = "usermod -p '{{ mkpasswd_output.stdout | regex_replace('\$', '\\$') }}' phosh;"
 
       IMAGE_LINGUAS = "en-us"
-
+      CORE_IMAGE_EXTRA_INSTALL = "iproute2-ip"
       {{ phosh_extra_local_conf }}
 
 - name: Show local.conf
@@ -88,5 +88,5 @@
     set -e
     .  {{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/oe-init-build-env {{ phosh_build_dir }}
 
-    bitbake -k phosh phoc core-image-minimal
+    bitbake -k core-image-phosh core-image-phosh-gnome
   async: 28800

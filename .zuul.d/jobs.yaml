@@ -5,7 +5,7 @@
     run:
       - playbooks/build-phosh.yaml
     vars:
-      phosh_archive_deploy_url: http://yocto-cache.yocto-build.svc.cluster.local/deploy/
+      phosh_archive_deploy_url: http://downloads.wattissoftware.com/deploy/
       phosh_archive_deploy_dir: /mnt/cache/yocto/deploy
     required-projects:
       - name: poky

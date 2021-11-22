@@ -1,0 +1,48 @@
+From 55eb73ac42fe52c2afc15c5a333619f530994190 Mon Sep 17 00:00:00 2001
+From: Joshua Watt <JPEWhacker@gmail.com>
+Date: Thu, 18 Nov 2021 19:45:01 -0600
+Subject: [PATCH] classes/crate-fetch: Ensure crate fetcher is available
+
+Reworks the crate fetcher class to have it install the fetcher at recipe
+finalization so that it is always available before SRC_URI is expanded.
+In addition, override the value of SRCPV to also install the fetcher
+when SRCPV is expanded so that AUTOREV works.
+
+Signed-off-by: Joshua Watt <JPEWhacker@gmail.com>
+---
+ meta/classes/crate-fetch.bbclass | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/meta/classes/crate-fetch.bbclass b/meta/classes/crate-fetch.bbclass
+index c0ed434a96..a7fa22b2a0 100644
+--- a/meta/classes/crate-fetch.bbclass
++++ b/meta/classes/crate-fetch.bbclass
+@@ -7,7 +7,22 @@
+ # crate://<packagename>/<version>
+ #
+ 
+-python () {
+-        import crate
+-        bb.fetch2.methods.append( crate.Crate() )
++def import_crate(d):
++    import crate
++    if not getattr(crate, 'imported', False):
++        bb.fetch2.methods.append(crate.Crate())
++        crate.imported = True
++
++python crate_import_handler() {
++    import_crate(d)
+ }
++
++addhandler crate_import_handler
++crate_import_handler[eventmask] = "bb.event.RecipePreFinalise"
++
++def crate_get_srcrev(d):
++    import_crate(d)
++    return bb.fetch2.get_srcrev(d)
++
++# Override SRCPV to make sure it imports the fetcher first
++SRCPV = "${@crate_get_srcrev(d)}"
+-- 
+2.33.0
+
