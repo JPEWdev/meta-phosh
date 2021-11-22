@@ -11,4 +11,5 @@ RDEPENDS:${PN} = "\
     phoc \
     phosh \
     squeekboard \
+    glibc-localedatas \
     "
