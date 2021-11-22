@@ -19,3 +19,5 @@
 
         - phosh-qemux86-64-test
         - phosh-raspberrypi4-64-test
+
+        - phosh-publish-daily

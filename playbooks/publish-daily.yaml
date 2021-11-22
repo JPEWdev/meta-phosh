@@ -1,0 +1,7 @@
+- hosts: all
+  tasks:
+    - name: Publish Deploy artifacts
+      include_tasks: publish-artifact.yaml
+      when: item.name == "deploy"
+      loop: "{{ zuul.artifacts }}"
+

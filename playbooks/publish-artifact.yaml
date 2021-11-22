@@ -1,0 +1,28 @@
+- name: Download artifact
+  get_url:
+    url: "{{ item.url }}"
+    dest: "{{ zuul.project.src_dir }}/{{ item.job }}-deploy.tar.zstd"
+    checksum: "sha1:{{ item.metadata.sha1 }}"
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Create publish directory
+  ansible.builtin.file:
+    path: "{{ publish_base_dir }}/{{ item.job }}/"
+    mode: "0755"
+    state: directory
+
+- name: Publish file
+  ansible.builtin.copy:
+    src: "{{ zuul.project.src_dir }}/{{ item.job }}-deploy.tar.zstd"
+    dest: "{{ publish_base_dir }}/{{ item.job }}/{{ item.job }}-deploy.tar.zstd"
+    remote_src: yes
+    unsafe_writes: no
+
+- name: Write checksum file
+  ansible.builtin.copy:
+    dest: "{{ publish_base_dir }}/{{ item.job }}/{{ item.job }}-deploy.tar.zstd.sha1sum"
+    content: |
+      {{ item.metadata.sha1 }}  {{ item.job }}-deploy.tar.zstd
