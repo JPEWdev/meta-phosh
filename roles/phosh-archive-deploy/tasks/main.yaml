@@ -9,6 +9,7 @@
     set -e
     cd tmp/deploy
     find . -path '*/images/*' | tar -I pzstd --files-from - -cvf "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
+    sync "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
   args:
     chdir: "{{ phosh_build_dir }}"
     executable: /bin/bash
