@@ -1,4 +1,5 @@
 import pytest
+import time
 
 
 def test_boot(image, shell_command):
@@ -10,12 +11,15 @@ def test_ssh(image, ssh_command):
 
 
 def test_phoc(image, shell_command):
+    time.sleep(5)
     shell_command.run_check("pidof phoc")
 
 
 def test_phosh(image, shell_command):
+    time.sleep(5)
     shell_command.run_check("pidof phosh")
 
 
 def test_squeekboard(image, shell_command):
+    time.sleep(5)
     shell_command.run_check("pidof squeekboard")
