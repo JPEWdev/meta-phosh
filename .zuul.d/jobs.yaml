@@ -62,3 +62,16 @@
       labgrid_reservation: "product=raspberrypi4"
       labgrid_pytest_env: "ci/raspberrypi4/env.yaml"
       labgrid_pytest_args: "ci/raspberrypi4"
+
+- job:
+    name: phosh-publish-daily
+    run:
+      - playbooks/publish-daily.yaml
+    dependencies:
+      - phosh-qemux86-64
+      - phosh-qemux86-64-test
+      - phosh-raspberrypi4-64
+      - phosh-raspberrypi4-64-test
+    vars:
+      publish_base_url: "http://downloads.wattissoftware.com/publish/meta-phosh/{{ zuul.branch }}/"
+      publish_base_dir: "/mnt/cache/yocto/publish/meta-phosh/{{ zuul.branch }}/"

@@ -9,9 +9,16 @@
     set -e
     cd tmp/deploy
     find . -path '*/images/*' | tar -I pzstd --files-from - -cvf "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
+    sync "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
   args:
     chdir: "{{ phosh_build_dir }}"
     executable: /bin/bash
+
+- name: Checksum File
+  ansible.builtin.stat:
+    path: "{{ phosh_archive_deploy_dir }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
+    checksum_algorithm: "sha1"
+  register: checksum
 
 - name: Report artifacts
   zuul_return:
@@ -20,4 +27,5 @@
         artifacts:
           - name: deploy
             url: "{{ phosh_archive_deploy_url }}/{{ zuul.build }}/{{ phosh_deploy_filename }}"
-
+            metadata:
+              sha1: "{{ checksum.stat.checksum }}"
