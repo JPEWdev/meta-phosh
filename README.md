@@ -7,7 +7,7 @@ Build [Phosh Shell](https://puri.sm/projects/phosh/) for OpenEmbedded
 ## Downloading
 
 Prebuilt images for Raspberry Pi 4 and QEMU (built daily) can be downloaded
-[here](http://downloads.wattissoftware.com/publish/)
+[here](https://downloads.wattissoftware.com/publish/)
 
 ## Building
 The easiest way to build is with `kas`. You will need `docker` or `podman` installed.
