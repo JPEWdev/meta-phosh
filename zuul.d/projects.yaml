@@ -14,6 +14,7 @@
 
     periodic-daily:
       jobs:
+        - phosh-recipe-upgrade
         - phosh-qemux86-64
         - phosh-raspberrypi4-64
 

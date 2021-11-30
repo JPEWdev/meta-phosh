@@ -1,0 +1,89 @@
+- name: Create build conf directory
+  ansible.builtin.file:
+    path: "{{ phosh_build_dir }}/conf"
+    state: directory
+
+- name: Prep layers
+  ansible.builtin.copy:
+    dest: "{{ phosh_build_dir }}/conf/bblayers.conf"
+    content: |
+      POKY_BBLAYERS_CONF_VERSION = "2"
+
+      BBPATH = "${TOPDIR}"
+      BBFILES ?= ""
+
+      BBLAYERS = ""
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/meta"
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/meta-poky"
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-gnome"
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-networking"
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-oe"
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-python"
+      BBLAYERS += "{{ ansible_user_dir }}/{{ zuul.projects['github.com/JPEWdev/meta-phosh'].src_dir }}"
+
+- name: Append extra layers
+  ansible.builtin.lineinfile:
+    path: "{{ phosh_build_dir }}/conf/bblayers.conf"
+    line: 'BBLAYERS += "{{ item }}"'
+  loop: "{{ phosh_extra_layers }}"
+
+- name: Generate password
+  ansible.builtin.shell: |
+    set -e
+    echo {{ phosh_user_pin }} | mkpasswd -m sha512crypt -s
+  register: mkpasswd_output
+
+- name: Prep local.conf
+  ansible.builtin.copy:
+    dest: "{{ phosh_build_dir }}/conf/local.conf"
+    content: |
+      CONF_VERSION = "2"
+
+      MACHINE = "{{ phosh_machine }}"
+      DISTRO = "poky"
+      PACKAGE_CLASSES = "package_rpm"
+      EXTRA_IMAGE_FEATURES = "debug-tweaks"
+      PATCHRESOLVE = "noop"
+      BB_DISKMON_DIRS ??= "\
+          STOPTASKS,${TMPDIR},1G,100K \
+          STOPTASKS,${DL_DIR},1G,100K \
+          STOPTASKS,${SSTATE_DIR},1G,100K \
+          STOPTASKS,/tmp,100M,100K \
+          ABORT,${TMPDIR},100M,1K \
+          ABORT,${DL_DIR},100M,1K \
+          ABORT,${SSTATE_DIR},100M,1K \
+          ABORT,/tmp,10M,1K"
+
+      SSTATE_DIR = "/mnt/cache/yocto/sstate"
+      DL_DIR = "/mnt/cache/yocto/downloads"
+
+      PARALLEL_MAKE = "-j 9"
+      BB_NUMBER_THREADS = "9"
+
+      BB_TASK_NICE_LEVEL = "10"
+
+      BB_HASHSERVE = "yocto-hashserv.yocto-build.svc.cluster.local:8686"
+      BB_SIGNATURE_HANDLER = "OEEquivHash"
+
+      DISTRO_FEATURES:append = " systemd opengl pam polkit pulseaudio gobject-introspection-data wayland x11"
+
+      VIRTUAL-RUNTIME_init_manager = "systemd"
+      DISTRO_FEATURES_BACKFILL_CONSIDERED = "sysvinit"
+      VIRTUAL-RUNTIME_initscripts = "systemd-compat-units"
+      NETWORK_MANAGER = "systemd"
+
+      INHERIT += "extrausers"
+      EXTRA_USERS_PARAMS = "usermod -p '{{ mkpasswd_output.stdout | regex_replace('\$', '\\$') }}' phosh;"
+
+      IMAGE_LINGUAS = "en-us"
+      CORE_IMAGE_EXTRA_INSTALL = "iproute2-ip"
+      {{ phosh_extra_local_conf }}
+
+- name: Show local.conf
+  ansible.builtin.command:
+    cmd: "cat {{ phosh_build_dir }}/conf/local.conf"
+
+- name: Set git user info
+  ansible.builtin.shell: |
+    git -C {{ zuul.project.src_dir }} config user.name zuul
+    git -C {{ zuul.project.src_dir }} config user.email zuul@wattissoftware.com
