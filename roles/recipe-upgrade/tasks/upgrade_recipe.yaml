@@ -1,0 +1,21 @@
+- name: Upgrade recipe
+  shell: |
+    set -e
+    .  {{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/oe-init-build-env {{ phosh_build_dir }}
+
+    devtool upgrade {{ item }}
+  async: 28800
+  register: upgrade_status
+  ignore_errors: yes
+
+- block:
+    - name: Finish upgrade
+      shell: |
+        set -e
+        .  {{ ansible_user_dir }}/{{ zuul.projects['git.yoctoproject.org/poky'].src_dir }}/oe-init-build-env {{ phosh_build_dir }}
+
+        devtool finish {{ item }} {{ ansible_user_dir }}/{{ zuul.project.src_dir }}
+    - name: Append upgraded recipes
+      set_fact:
+        upgraded_recipes: "{{ upgraded_recipes + [ item ] }}"
+  when: upgrade_status.rc == 0

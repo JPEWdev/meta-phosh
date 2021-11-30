@@ -1,0 +1,57 @@
+- name: Copy create pull request script
+  copy:
+    dest: "{{ ansible_user_dir }}/scripts/"
+    src: "create_pull_request.py"
+    mode: 0755
+
+- name: Install Python depenendencies
+  shell: |
+    set -e
+    python3 -m pip install --user \
+      cryptography \
+      pyjwt \
+      requests \
+
+- name: Configure git user
+  shell: |
+    set -e
+    git config --global user.name zuul
+    git config --global user.email zuul@wattissoftware.com
+  args:
+    chdir: "{{ zuul.project.src_dir }}"
+
+- name: Set upgraded recipes
+  set_fact:
+    upgraded_recipes: []
+
+- name: Upgrade Recipe
+  include_tasks: upgrade_recipe.yaml
+  loop: "{{ upgrade_recipes }}"
+
+- block:
+    - name: Commit changes
+      shell: |
+        set -e
+        git add -A .
+        git commit -m "{{ upgraded_recipes | join(', ') }}: Upgrade"
+        git format-patch -1 -o "{{ recipe_upgrade_patch_output }}"
+      args:
+        chdir: "{{ zuul.project.src_dir }}"
+
+    - name: Create pull request
+      shell: |
+        {{ ansible_user_dir }}/scripts/create_pull_request.py \
+            --path "{{ ansible_user_dir }}/{{ zuul.project.src_dir }}" \
+            --repo "{{ zuul.project.canonical_name }}" \
+            --branch "{{ recipe_upgrade_branch }}" \
+            --id "{{ hostvars['localhost'].github_app.app_id }}" \
+            --key - \
+            --pull "{{ recipe_upgrade_target_branch }}" \
+        <<HEREDOC
+        {{ hostvars['localhost'].github_app.private_key }}
+        HEREDOC
+      no_log: true
+      args:
+        executable: /bin/bash
+
+  when: "{{ upgraded_recipes | length }}"
