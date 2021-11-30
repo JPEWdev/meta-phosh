@@ -14,10 +14,11 @@
 
     periodic-daily:
       jobs:
-        - phosh-qemux86-64
-        - phosh-raspberrypi4-64
+        - phosh-recipe-upgrade
+          #- phosh-qemux86-64
+          #- phosh-raspberrypi4-64
 
-        - phosh-qemux86-64-test
-        - phosh-raspberrypi4-64-test
+          #- phosh-qemux86-64-test
+          #- phosh-raspberrypi4-64-test
 
-        - phosh-publish-daily
+          #- phosh-publish-daily

@@ -75,3 +75,19 @@
     vars:
       publish_base_url: "https://downloads.wattissoftware.com/publish/meta-phosh/{{ zuul.branch }}/"
       publish_base_dir: "/mnt/cache/yocto/publish/meta-phosh/{{ zuul.branch }}/"
+
+- job:
+    name: phosh-recipe-upgrade
+    parent: phosh-base
+    run:
+      - playbooks/recipe-upgrade.yaml
+    vars:
+      phosh_machine: qemux86-64
+      upgrade_recipes:
+        - callaudiod
+        - feedbackd
+        - phoc
+        - phosh
+        - squeekboard
+        - umockdev
+        - usbguard

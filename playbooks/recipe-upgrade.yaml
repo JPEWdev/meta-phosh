@@ -2,5 +2,5 @@
   roles:
     - apply-patches
     - prepare-phosh
-    - build-phosh
-    - phosh-archive-deploy
+    - recipe-upgrade
+

@@ -1,0 +1,28 @@
+- name: Set upgraded recipes
+  set_fact:
+    upgraded_recipes: []
+
+- name: Upgrade Recipe
+  include_tasks: upgrade_recipe.yaml
+  loop: "{{ upgrade_recipes }}"
+
+- block:
+    - name: Commit changes
+      shell: |
+        set -e
+        git add -A .
+        git commit -m "{{ upgraded_recipes | join(', ') }}: Upgrade"
+        git format-patch -1 -o "{{ recipe_upgrade_patch_output }}"
+      args:
+        chdir: "{{ zuul_work_dir }}"
+
+    - name: Install pyjwt
+      shell: |
+        set -e
+        python3 -m pip install --user pyjwt
+
+    - name: Add remote
+      shell: |
+        git remote add upstream https://x-access-token@
+
+  when: "{{ upgraded_recipes | length }}"

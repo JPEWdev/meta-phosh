@@ -1,0 +1,5 @@
+zuul_work_dir: "{{ zuul.project.src_dir }}"
+phosh_build_dir: "{{ zuul_work_dir }}/build"
+zuul_output_dir: "{{ ansible_user_dir }}/zuul-output"
+upgrade_recipes: []
+recipe_upgrade_patch_output: "{{ zuul_output_dir }}/logs"
