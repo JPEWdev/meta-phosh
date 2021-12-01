@@ -1,0 +1,55 @@
+From e3f8c101837493cd4a8edf8722e6ecd0c79d497c Mon Sep 17 00:00:00 2001
+From: Radovan Sroka <rsroka@redhat.com>
+Date: Sun, 28 Mar 2021 15:30:16 +0200
+Subject: [PATCH] Fixed ansible playbook
+
+Signed-off-by: Radovan Sroka <rsroka@redhat.com>
+---
+ src/Tests/LDAP/ansible/playbook.yml                           | 2 +-
+ .../roles/bennojoy.openldap_server/tasks/install_ldap.yml     | 4 ++--
+ .../ansible/roles/bennojoy.openldap_server/vars/Debian.yml    | 1 -
+ 3 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/src/Tests/LDAP/ansible/playbook.yml b/src/Tests/LDAP/ansible/playbook.yml
+index 3cf0487..04a3e1f 100644
+--- a/src/Tests/LDAP/ansible/playbook.yml
++++ b/src/Tests/LDAP/ansible/playbook.yml
+@@ -1,5 +1,5 @@
+ - hosts: all
+-  sudo: true
++  become: true
+   roles:
+     - role: bennojoy.openldap_server
+       openldap_server_domain_name: example.com
+diff --git a/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/tasks/install_ldap.yml b/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/tasks/install_ldap.yml
+index 7c5abb0..0fa5303 100644
+--- a/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/tasks/install_ldap.yml
++++ b/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/tasks/install_ldap.yml
+@@ -28,13 +28,13 @@
+ #  when: ansible_os_family == 'Debian'
+ 
+ - name: Install the openldap and required Packages for RedHat
+-  yum: name={{ item }} state=installed
++  yum: name={{ item }} state=present
+   with_items: "{{ openldap_server_pkgs }}"
+   when: ansible_os_family == 'RedHat'
+ 
+ 
+ - name: Install the openldap and required Packages for Ubuntu
+-  apt: name={{ item }} state=installed
++  apt: name={{ item }} state=present
+   with_items: "{{ openldap_server_pkgs }}"
+ #  environment: env
+   when: ansible_os_family == 'Debian'
+diff --git a/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/vars/Debian.yml b/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/vars/Debian.yml
+index 42ed382..2cf4da9 100644
+--- a/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/vars/Debian.yml
++++ b/src/Tests/LDAP/ansible/roles/bennojoy.openldap_server/vars/Debian.yml
+@@ -1,7 +1,6 @@
+ openldap_server_pkgs:
+   - slapd
+   - ldap-utils
+-  - python-selinux
+   - openssl
+ 
+ openldap_server_app_path: "/etc/ldap/"

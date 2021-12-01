@@ -1,0 +1,485 @@
+From e0e593684de92af576e4e6a33c5e81941f936a1e Mon Sep 17 00:00:00 2001
+From: Tobias Mueller <muelli@cryptobitch.de>
+Date: Thu, 24 Sep 2020 10:40:14 +0200
+Subject: [PATCH] Added a new signal: DevicePolicyApplied to inform about
+ actions on a device
+
+The DevicePolicyChanged signal is guarded by a check for whether the
+"target" changed.  That is, it fired whenever a device was present,
+inserted, or a rule has changed, *except* if a) a rule has matched and
+b) it has changed whatever the outcome under the implicit rule was.
+That behaviour is arguably much more difficult to explain than just
+firing whenever a device is present, inserted, or had a rule changed.
+At the same time, such a signal is much more useful for consumers.
+
+More precisely: Now, consumers can listen to that signal and get to know
+what happened to a device, i.e. whether it was accepted or rejected.
+Before this change, this was difficult at best, if not impossible.
+The other PresentChanged signal exists and it tells you whenever a
+devices is inserted. But then you wouldn't know whether the target it
+carries is the final one or whether a PolicyChange signal will
+come to tell what happened with the device. So you needed to invent a
+timeout after which you believe that USBGuard won't throw any further
+signals and only then act accordingly, e.g. allow or reject a device.
+
+This is a new signal in order to not break existing applications.
+---
+ src/CLI/IPCSignalWatcher.cpp              | 22 +++++++++++++
+ src/CLI/IPCSignalWatcher.hpp              |  5 +++
+ src/DBus/DBusBridge.cpp                   | 21 ++++++++++++
+ src/DBus/DBusBridge.hpp                   |  5 +++
+ src/DBus/DBusInterface.xml                | 40 +++++++++++++++++++++--
+ src/Daemon/Daemon.cpp                     | 11 +++++--
+ src/Library/IPC/Devices.proto             |  7 ++++
+ src/Library/IPCClientPrivate.cpp          | 12 +++++++
+ src/Library/IPCClientPrivate.hpp          |  1 +
+ src/Library/IPCPrivate.cpp                | 17 +++++-----
+ src/Library/IPCServerPrivate.cpp          | 17 ++++++++++
+ src/Library/IPCServerPrivate.hpp          |  5 +++
+ src/Library/public/usbguard/IPCClient.hpp | 18 ++++++++++
+ src/Library/public/usbguard/IPCServer.cpp |  8 +++++
+ src/Library/public/usbguard/IPCServer.hpp |  8 +++++
+ src/Library/public/usbguard/Interface.hpp | 26 +++++++++++++++
+ 16 files changed, 210 insertions(+), 13 deletions(-)
+
+diff --git a/src/CLI/IPCSignalWatcher.cpp b/src/CLI/IPCSignalWatcher.cpp
+index b658f91..88013bd 100644
+--- a/src/CLI/IPCSignalWatcher.cpp
++++ b/src/CLI/IPCSignalWatcher.cpp
+@@ -127,6 +127,28 @@ namespace usbguard
+     }
+   }
+ 
++  void IPCSignalWatcher::DevicePolicyApplied(uint32_t id,
++    Rule::Target target_new,
++    const std::string& device_rule,
++    uint32_t rule_id)
++  {
++    std::cout << "[device] PolicyApplied: id=" << id << std::endl;
++    std::cout << " target_new=" << Rule::targetToString(target_new) << std::endl;
++    std::cout << " device_rule=" << device_rule << std::endl;
++    std::cout << " rule_id=" << rule_id << std::endl;
++
++    if (hasOpenExecutable()) {
++      const std::map<std::string, std::string> env = {
++        { "USBGUARD_IPC_SIGNAL", "Device.PolicyApplied" },
++        { "USBGUARD_DEVICE_ID", std::to_string(id) },
++        { "USBGUARD_DEVICE_TARGET_NEW", Rule::targetToString(target_new) },
++        { "USBGUARD_DEVICE_RULE", device_rule },
++        { "USBGUARD_DEVICE_RULE_ID", std::to_string(rule_id) }
++      };
++      runExecutable(env);
++    }
++  }
++
+   void IPCSignalWatcher::PropertyParameterChanged(const std::string& name,
+     const std::string& value_old,
+     const std::string& value_new)
+diff --git a/src/CLI/IPCSignalWatcher.hpp b/src/CLI/IPCSignalWatcher.hpp
+index 00dcedd..94e4a01 100644
+--- a/src/CLI/IPCSignalWatcher.hpp
++++ b/src/CLI/IPCSignalWatcher.hpp
+@@ -46,6 +46,11 @@ namespace usbguard
+       const std::string& device_rule,
+       uint32_t rule_id) override;
+ 
++    void DevicePolicyApplied(uint32_t id,
++      Rule::Target target_new,
++      const std::string& device_rule,
++      uint32_t rule_id) override;
++
+     void PropertyParameterChanged(const std::string& name,
+       const std::string& value_old,
+       const std::string& value_new) override;
+diff --git a/src/DBus/DBusBridge.cpp b/src/DBus/DBusBridge.cpp
+index 76471e7..82208ba 100644
+--- a/src/DBus/DBusBridge.cpp
++++ b/src/DBus/DBusBridge.cpp
+@@ -270,6 +270,27 @@ namespace usbguard
+     }
+   }
+ 
++  void DBusBridge::DevicePolicyApplied(uint32_t id,
++    Rule::Target target_new,
++    const std::string& device_rule,
++    uint32_t rule_id)
++  {
++    GVariantBuilder* gv_builder_attributes = deviceRuleToAttributes(device_rule);
++    g_dbus_connection_emit_signal(p_gdbus_connection, nullptr,
++      DBUS_DEVICES_PATH, DBUS_DEVICES_INTERFACE, "DevicePolicyApplied",
++      g_variant_new("(uusua{ss})",
++        id,
++        Rule::targetToInteger(target_new),
++        device_rule.c_str(),
++        rule_id,
++        gv_builder_attributes),
++      nullptr);
++
++    if (gv_builder_attributes != nullptr) {
++      g_variant_builder_unref(gv_builder_attributes);
++    }
++  }
++
+   void DBusBridge::PropertyParameterChanged(const std::string& name,
+     const std::string& value_old,
+     const std::string& value_new)
+diff --git a/src/DBus/DBusBridge.hpp b/src/DBus/DBusBridge.hpp
+index cd370ba..d3b8f37 100644
+--- a/src/DBus/DBusBridge.hpp
++++ b/src/DBus/DBusBridge.hpp
+@@ -63,6 +63,11 @@ namespace usbguard
+       const std::string& device_rule,
+       uint32_t rule_id) override;
+ 
++    void DevicePolicyApplied(uint32_t id,
++      Rule::Target target_new,
++      const std::string& device_rule,
++      uint32_t rule_id) override;
++
+     void PropertyParameterChanged(const std::string& name,
+       const std::string& value_old,
+       const std::string& value_new) override;
+diff --git a/src/DBus/DBusInterface.xml b/src/DBus/DBusInterface.xml
+index 3b78fe9..96999bd 100644
+--- a/src/DBus/DBusInterface.xml
++++ b/src/DBus/DBusInterface.xml
+@@ -152,8 +152,8 @@
+       If the permanent flag is set to True, a rule will be appended to the policy or an exiting device
+       rule will be modified in order to permanently store the authorization decision.
+ 
+-      Sucessfull exection of this method will cause the DevicePolicyChanged signal to be broadcasted if
+-      the device authorization target was different than the applied target.
++      Successful execution of this method will cause the DevicePolicyChanged signal to be broadcasted if
++      the device authorization target was different from the applied target.
+       -->
+     <method name="applyDevicePolicy">
+       <arg name="id" direction="in" type="u"/>
+@@ -205,6 +205,7 @@
+       DevicePolicyChanged:
+        @id: Device id of the device
+        @target_old: Previous authorization target in numerical form.
++                    0 = Allow. 1 = Block. 2 = Reject.
+        @target_new: Current authorization target in numerical form.
+        @device_rule: Device specific rule.
+        @rule_id: A rule id of the matched rule. Otherwise a reserved rule id value is used.
+@@ -234,6 +235,41 @@
+       <arg name="rule_id" direction="out" type="u"/>
+       <arg name="attributes" direction="out" type="a{ss}"/>
+     </signal>
++
++    <!--
++      DevicePolicyApplied:
++       @id: Device id of the device
++       @target_new: Current authorization target in numerical form.
++                    0 = Allow. 1 = Block. 2 = Reject.
++       @device_rule: Device specific rule.
++       @rule_id: A rule id of the matched rule. Otherwise a reserved rule id value is used.
++                 Reserved values are:
++                     4294967294 (UINT32_MAX - 1) for an implicit rule, e.g. 
++                     ImplicitPolicyTarget or InsertedDevicePolicy.
++       @attributes: A dictionary of device attributes and their values.
++
++      Notify about a change of a USB device.
++      This is a superset of DevicePolicyChanged and will always be thrown
++      when a device is inserted, authorised, or rejected.
++
++      The device attribute dictionary contains the following attributes:
++        - id (the USB device ID in the form VID:PID)
++        - name
++        - serial
++        - via-port
++        - hash
++        - parent-hash
++        - with-interface
++        - with-connect-type (either "hardwired", "hotplug", or the empty string for unknown)
++
++     -->
++    <signal name="DevicePolicyApplied">
++      <arg name="id" direction="out" type="u"/>
++      <arg name="target_new" direction="out" type="u"/>
++      <arg name="device_rule" direction="out" type="s"/>
++      <arg name="rule_id" direction="out" type="u"/>
++      <arg name="attributes" direction="out" type="a{ss}"/>
++    </signal>
+   </interface>
+ </node>
+ 
+diff --git a/src/Daemon/Daemon.cpp b/src/Daemon/Daemon.cpp
+index 9dd5fbc..fa27231 100644
+--- a/src/Daemon/Daemon.cpp
++++ b/src/Daemon/Daemon.cpp
+@@ -850,6 +850,9 @@ namespace usbguard
+         matched_rule->getTarget());
+     const bool target_changed = target_old != device_post->getTarget();
+ 
++    std::shared_ptr<const Rule> device_rule = \
++        device_post->getDeviceRule(/*with_port=*/true,
++          /*with_parent_hash=*/true);
+     if (target_changed || matched_rule->getRuleID() == Rule::ImplicitID) {
+       if (target_changed) {
+         USBGUARD_LOG(Debug) << "Device target changed:"
+@@ -860,9 +863,6 @@ namespace usbguard
+         USBGUARD_LOG(Debug) << "Implicit rule matched";
+       }
+ 
+-      std::shared_ptr<const Rule> device_rule = \
+-        device_post->getDeviceRule(/*with_port=*/true,
+-          /*with_parent_hash=*/true);
+       DevicePolicyChanged(device->getID(),
+         target_old,
+         device_post->getTarget(),
+@@ -870,6 +870,11 @@ namespace usbguard
+         matched_rule->getRuleID());
+     }
+ 
++    DevicePolicyApplied(device->getID(),
++        device_post->getTarget(),
++        device_rule->toString(),
++        matched_rule->getRuleID());
++
+     matched_rule->updateMetaDataCounters(/*applied=*/true);
+     audit_event.success();
+   }
+diff --git a/src/Library/IPC/Devices.proto b/src/Library/IPC/Devices.proto
+index ba7ea1f..8cfb2a0 100644
+--- a/src/Library/IPC/Devices.proto
++++ b/src/Library/IPC/Devices.proto
+@@ -51,6 +51,13 @@ message DevicePolicyChangedSignal {
+   required uint32 rule_id = 5;
+ }
+ 
++message DevicePolicyAppliedSignal {
++  required uint32 id = 1;
++  required uint32 target_new = 2;
++  required string device_rule = 3;
++  required uint32 rule_id = 4;
++}
++
+ message PropertyParameterChangedSignal {
+   required string name = 1;
+   required string value_old = 2;
+diff --git a/src/Library/IPCClientPrivate.cpp b/src/Library/IPCClientPrivate.cpp
+index 5ba6c02..44a1c16 100644
+--- a/src/Library/IPCClientPrivate.cpp
++++ b/src/Library/IPCClientPrivate.cpp
+@@ -85,6 +85,7 @@ namespace usbguard
+     registerHandler<IPC::Exception>(&IPCClientPrivate::handleException);
+     registerHandler<IPC::DevicePresenceChangedSignal>(&IPCClientPrivate::handleDevicePresenceChangedSignal);
+     registerHandler<IPC::DevicePolicyChangedSignal>(&IPCClientPrivate::handleDevicePolicyChangedSignal);
++    registerHandler<IPC::DevicePolicyAppliedSignal>(&IPCClientPrivate::handleDevicePolicyAppliedSignal);
+     registerHandler<IPC::PropertyParameterChangedSignal>(&IPCClientPrivate::handlePropertyParameterChangedSignal);
+ 
+     if (connected) {
+@@ -522,6 +523,17 @@ namespace usbguard
+       signal->rule_id());
+   }
+ 
++  void IPCClientPrivate::handleDevicePolicyAppliedSignal(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out)
++  {
++    (void)message_out;
++    const IPC::DevicePolicyAppliedSignal* const signal = \
++      reinterpret_cast<const IPC::DevicePolicyAppliedSignal*>(message_in.get());
++    _p_instance.DevicePolicyApplied(signal->id(),
++      Rule::targetFromInteger(signal->target_new()),
++      signal->device_rule(),
++      signal->rule_id());
++  }
++
+   void IPCClientPrivate::handlePropertyParameterChangedSignal(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out)
+   {
+     (void)message_out;
+diff --git a/src/Library/IPCClientPrivate.hpp b/src/Library/IPCClientPrivate.hpp
+index 35ff50c..b03baab 100644
+--- a/src/Library/IPCClientPrivate.hpp
++++ b/src/Library/IPCClientPrivate.hpp
+@@ -109,6 +109,7 @@ namespace usbguard
+     void handleException(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out);
+     void handleDevicePresenceChangedSignal(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out);
+     void handleDevicePolicyChangedSignal(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out);
++    void handleDevicePolicyAppliedSignal(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out);
+     void handlePropertyParameterChangedSignal(IPC::MessagePointer& message_in, IPC::MessagePointer& message_out);
+ 
+     IPCClient& _p_instance;
+diff --git a/src/Library/IPCPrivate.cpp b/src/Library/IPCPrivate.cpp
+index 2a661e9..1b8f23f 100644
+--- a/src/Library/IPCPrivate.cpp
++++ b/src/Library/IPCPrivate.cpp
+@@ -38,14 +38,15 @@ namespace usbguard
+     { 0x02, "usbguard.IPC.applyDevicePolicy" },
+     { 0x03, "usbguard.IPC.DevicePresenceChangedSignal" },
+     { 0x04, "usbguard.IPC.DevicePolicyChangedSignal" },
+-    { 0x05, "usbguard.IPC.PropertyParameterChangedSignal" },
+-    { 0x06, "usbguard.IPC.listRules" },
+-    { 0x07, "usbguard.IPC.appendRule" },
+-    { 0x08, "usbguard.IPC.removeRule" },
+-    { 0x09, "usbguard.IPC.Exception" },
+-    { 0x0a, "usbguard.IPC.getParameter" },
+-    { 0x0b, "usbguard.IPC.setParameter" },
+-    { 0x0c, "usbguard.IPC.checkIPCPermissions" }
++    { 0x05, "usbguard.IPC.DevicePolicyAppliedSignal" },
++    { 0x06, "usbguard.IPC.PropertyParameterChangedSignal" },
++    { 0x07, "usbguard.IPC.listRules" },
++    { 0x08, "usbguard.IPC.appendRule" },
++    { 0x09, "usbguard.IPC.removeRule" },
++    { 0x0a, "usbguard.IPC.Exception" },
++    { 0x0b, "usbguard.IPC.getParameter" },
++    { 0x0c, "usbguard.IPC.setParameter" },
++    { 0x0d, "usbguard.IPC.checkIPCPermissions" }
+   };
+ 
+   uint32_t IPC::messageTypeNameToNumber(const std::string& name)
+diff --git a/src/Library/IPCServerPrivate.cpp b/src/Library/IPCServerPrivate.cpp
+index b1343f9..d952350 100644
+--- a/src/Library/IPCServerPrivate.cpp
++++ b/src/Library/IPCServerPrivate.cpp
+@@ -535,6 +535,10 @@ namespace usbguard
+       return IPCServer::AccessControl::Section::DEVICES;
+     }
+ 
++    if (name == "usbguard.IPC.DevicePolicyAppliedSignal") {
++      return IPCServer::AccessControl::Section::DEVICES;
++    }
++
+     if (name == "usbguard.IPC.PropertyParameterChangedSignal") {
+       return IPCServer::AccessControl::Section::PARAMETERS;
+     }
+@@ -1036,6 +1040,19 @@ namespace usbguard
+     qbIPCBroadcastMessage(&signal);
+   }
+ 
++  void IPCServerPrivate::DevicePolicyApplied(uint32_t id,
++    Rule::Target target_new,
++    const std::string& device_rule,
++    uint32_t rule_id)
++  {
++    IPC::DevicePolicyAppliedSignal signal;
++    signal.set_id(id);
++    signal.set_target_new(Rule::targetToInteger(target_new));
++    signal.set_device_rule(device_rule);
++    signal.set_rule_id(rule_id);
++    qbIPCBroadcastMessage(&signal);
++  }
++
+   void IPCServerPrivate::PropertyParameterChanged(const std::string& name,
+     const std::string& value_old,
+     const std::string& value_new)
+diff --git a/src/Library/IPCServerPrivate.hpp b/src/Library/IPCServerPrivate.hpp
+index 98ebf9c..25f9ac3 100644
+--- a/src/Library/IPCServerPrivate.hpp
++++ b/src/Library/IPCServerPrivate.hpp
+@@ -63,6 +63,11 @@ namespace usbguard
+       const std::string& device_rule,
+       uint32_t rule_id);
+ 
++    void DevicePolicyApplied(uint32_t id,
++      Rule::Target target_new,
++      const std::string& device_rule,
++      uint32_t rule_id);
++
+     void PropertyParameterChanged(const std::string& name,
+       const std::string& value_old,
+       const std::string& value_new);
+diff --git a/src/Library/public/usbguard/IPCClient.hpp b/src/Library/public/usbguard/IPCClient.hpp
+index 1675d4d..56f99c5 100644
+--- a/src/Library/public/usbguard/IPCClient.hpp
++++ b/src/Library/public/usbguard/IPCClient.hpp
+@@ -222,6 +222,24 @@ namespace usbguard
+       (void)rule_id;
+     }
+ 
++    /**
++     * @brief Defines actions to perform when a USB device
++     * has been inserted, accepted, or rejected.
++     *
++     * @see \link Interface::DevicePolicyApplied()
++     * DevicePolicyApplied()\endlink
++     */
++    virtual void DevicePolicyApplied(uint32_t id,
++      Rule::Target target_new,
++      const std::string& device_rule,
++      uint32_t rule_id) override
++    {
++      (void)id;
++      (void)target_new;
++      (void)device_rule;
++      (void)rule_id;
++    }
++
+     /**
+      * @brief Defines algorithm to perform in the case that property parameter
+      * has been changed.
+diff --git a/src/Library/public/usbguard/IPCServer.cpp b/src/Library/public/usbguard/IPCServer.cpp
+index c7f700f..cdb38e9 100644
+--- a/src/Library/public/usbguard/IPCServer.cpp
++++ b/src/Library/public/usbguard/IPCServer.cpp
+@@ -286,6 +286,14 @@ namespace usbguard
+     d_pointer->DevicePolicyChanged(id, target_old, target_new, device_rule, rule_id);
+   }
+ 
++  void IPCServer::DevicePolicyApplied(uint32_t id,
++    Rule::Target target_new,
++    const std::string& device_rule,
++    uint32_t rule_id)
++  {
++    d_pointer->DevicePolicyApplied(id, target_new, device_rule, rule_id);
++  }
++
+   void IPCServer::PropertyParameterChanged(const std::string& name,
+     const std::string& value_old,
+     const std::string& value_new)
+diff --git a/src/Library/public/usbguard/IPCServer.hpp b/src/Library/public/usbguard/IPCServer.hpp
+index 926b39b..77b42e3 100644
+--- a/src/Library/public/usbguard/IPCServer.hpp
++++ b/src/Library/public/usbguard/IPCServer.hpp
+@@ -323,6 +323,14 @@ namespace usbguard
+       const std::string& device_rule,
+       uint32_t rule_id);
+ 
++    /**
++     * @copydoc Interface::DevicePolicyApplied()
++     */
++    void DevicePolicyApplied(uint32_t id,
++      Rule::Target target_new,
++      const std::string& device_rule,
++      uint32_t rule_id);
++
+     /**
+      * @copydoc Interface::PropertyParameterChanged()
+      */
+diff --git a/src/Library/public/usbguard/Interface.hpp b/src/Library/public/usbguard/Interface.hpp
+index 8cf1d55..48d8292 100644
+--- a/src/Library/public/usbguard/Interface.hpp
++++ b/src/Library/public/usbguard/Interface.hpp
+@@ -189,6 +189,32 @@ namespace usbguard
+       const std::string& device_rule,
+       uint32_t rule_id) = 0;
+ 
++    /**
++     * @brief Notify about the acceptance or rejection of a device.
++     *
++     * This signal is thrown whenever a device is inserted.
++     * It is also thrown when a device has been allowed or rejected.
++     *
++     * The device attribute dictionary contains the following attributes:
++     * - id (the USB device ID in the form VID:PID)
++     * - name
++     * - serial
++     * - via-port
++     * - hash
++     * - parent-hash
++     * - with-interface
++     *
++     * @param id ID of the device.
++     * @param target_new Current authorization target.
++     * @param device_rule Device specific rule.
++     * @param rule_id Rule ID of the matched rule.
++     * Otherwise a reserved rule ID value is used.
++     */
++    virtual void DevicePolicyApplied(uint32_t id,
++      Rule::Target target_new,
++      const std::string& device_rule,
++      uint32_t rule_id) = 0;
++
+     /**
+      * @brief Notify about a change of a property parameter.
+      *

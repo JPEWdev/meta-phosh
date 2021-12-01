@@ -1,0 +1,36 @@
+From 638a46825c4fe57b64ceb057cae2c082aed3042a Mon Sep 17 00:00:00 2001
+From: Allen Webb <allenwebb@google.com>
+Date: Thu, 8 Apr 2021 10:20:24 -0500
+Subject: [PATCH] Add #include <tao/pegtl.hpp> to fuzzers.
+
+tao/pegtl.hpp includes version.hpp which defines
+TAO_PEGTL_VERSION_MAJOR. This is needed for #458 to work as intended.
+---
+ src/Tests/Fuzzers/fuzzer-rules.cpp  | 1 +
+ src/Tests/Fuzzers/fuzzer-uevent.cpp | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/Tests/Fuzzers/fuzzer-rules.cpp b/src/Tests/Fuzzers/fuzzer-rules.cpp
+index 569f03c..2a3cc0f 100644
+--- a/src/Tests/Fuzzers/fuzzer-rules.cpp
++++ b/src/Tests/Fuzzers/fuzzer-rules.cpp
+@@ -20,6 +20,7 @@
+ 
+ #include <cstdint>
+ 
++#include <tao/pegtl.hpp>
+ #if TAO_PEGTL_VERSION_MAJOR >= 3
+ #include <tao/pegtl/contrib/trace.hpp>
+ #else
+diff --git a/src/Tests/Fuzzers/fuzzer-uevent.cpp b/src/Tests/Fuzzers/fuzzer-uevent.cpp
+index 5be6478..b2070e0 100644
+--- a/src/Tests/Fuzzers/fuzzer-uevent.cpp
++++ b/src/Tests/Fuzzers/fuzzer-uevent.cpp
+@@ -20,6 +20,7 @@
+ 
+ #include <cstdint>
+ 
++#include <tao/pegtl.hpp>
+ #if TAO_PEGTL_VERSION_MAJOR >= 3
+ #include <tao/pegtl/contrib/trace.hpp>
+ #else

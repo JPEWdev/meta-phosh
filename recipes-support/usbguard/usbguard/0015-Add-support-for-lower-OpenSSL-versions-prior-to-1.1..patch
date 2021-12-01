@@ -1,0 +1,45 @@
+From 46618e1c704fa733aa5a7c3d1a33b0ecae4f44a2 Mon Sep 17 00:00:00 2001
+From: anudeepthika <55407536+anudeepthika@users.noreply.github.com>
+Date: Mon, 19 Apr 2021 12:11:30 +0530
+Subject: [PATCH] Add support for lower OpenSSL versions prior to 1.1.0 (#466)
+
+-Commit e4bdd55a (Add OpenSSL as crypto backend for device hashing) introduced
+support for newer versions of OpenSSL only
+-Fix this by detecting the OpenSSL version during the compile and use the proper
+EVP digest routines
+
+Co-authored-by: Anu Deepthika, Nandipati <Nandipati.AnuDeepthika@philips.com>
+---
+ src/Library/Hash.cpp | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/src/Library/Hash.cpp b/src/Library/Hash.cpp
+index c409515..756445d 100644
+--- a/src/Library/Hash.cpp
++++ b/src/Library/Hash.cpp
+@@ -39,8 +39,13 @@ namespace usbguard
+     crypto_hash_sha256_init(&_state);
+ #endif
+ #if defined(USBGUARD_USE_OPENSSL)
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+     if ((_state = EVP_MD_CTX_new()) == nullptr)
+       throw std::runtime_error("Dynamic memory allocation of message digest context failed.");
++#else
++    if ((_state = EVP_MD_CTX_create()) == nullptr)
++      throw std::runtime_error("Dynamic memory allocation of message digest context failed.");
++#endif  
+     if (!EVP_DigestInit_ex(_state, EVP_sha256(), nullptr))
+       throw std::runtime_error("Context initialization of message digest context failed.");
+ #endif
+@@ -101,7 +106,11 @@ namespace usbguard
+   Hash::~Hash()
+   {
+ #if defined(USBGUARD_USE_OPENSSL)
++#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+     EVP_MD_CTX_free(_state);
++#else
++    EVP_MD_CTX_destroy(_state);
++#endif
+ #endif
+     release();
+   }

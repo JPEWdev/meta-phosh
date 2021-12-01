@@ -1,0 +1,42 @@
+From 5505735ad83fbbed79504aaa4297baf4ce791642 Mon Sep 17 00:00:00 2001
+From: Allen Webb <allenwebb@google.com>
+Date: Wed, 3 Mar 2021 08:53:32 -0600
+Subject: [PATCH] Apply PEGTL 3.2.0 fixes to fuzzers.
+
+---
+ src/Tests/Fuzzers/fuzzer-rules.cpp  | 4 ++++
+ src/Tests/Fuzzers/fuzzer-uevent.cpp | 4 ++++
+ 2 files changed, 8 insertions(+)
+
+diff --git a/src/Tests/Fuzzers/fuzzer-rules.cpp b/src/Tests/Fuzzers/fuzzer-rules.cpp
+index 5728d43..569f03c 100644
+--- a/src/Tests/Fuzzers/fuzzer-rules.cpp
++++ b/src/Tests/Fuzzers/fuzzer-rules.cpp
+@@ -20,7 +20,11 @@
+ 
+ #include <cstdint>
+ 
++#if TAO_PEGTL_VERSION_MAJOR >= 3
++#include <tao/pegtl/contrib/trace.hpp>
++#else
+ #include <tao/pegtl/contrib/tracer.hpp>
++#endif
+ #include <usbguard/Rule.hpp>
+ #include <usbguard/RuleParser.hpp>
+ 
+diff --git a/src/Tests/Fuzzers/fuzzer-uevent.cpp b/src/Tests/Fuzzers/fuzzer-uevent.cpp
+index aeca009..5be6478 100644
+--- a/src/Tests/Fuzzers/fuzzer-uevent.cpp
++++ b/src/Tests/Fuzzers/fuzzer-uevent.cpp
+@@ -20,7 +20,11 @@
+ 
+ #include <cstdint>
+ 
++#if TAO_PEGTL_VERSION_MAJOR >= 3
++#include <tao/pegtl/contrib/trace.hpp>
++#else
+ #include <tao/pegtl/contrib/tracer.hpp>
++#endif
+ #include <UEvent.hpp>
+ 
+ using namespace usbguard;
