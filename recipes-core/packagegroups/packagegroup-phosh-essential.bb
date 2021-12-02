@@ -12,4 +12,5 @@ RDEPENDS:${PN} = "\
     phosh \
     squeekboard \
     glibc-localedatas \
+    glibc-utils \
     "

@@ -78,7 +78,7 @@
       EXTRA_USERS_PARAMS = "usermod -p '{{ mkpasswd_output.stdout | regex_replace('\$', '\\$') }}' phosh;"
 
       IMAGE_LINGUAS = "en-us"
-      CORE_IMAGE_EXTRA_INSTALL = "iproute2-ip"
+      CORE_IMAGE_EXTRA_INSTALL = "iproute2-ip sudo"
       {{ phosh_extra_local_conf }}
 
 - name: Show local.conf
