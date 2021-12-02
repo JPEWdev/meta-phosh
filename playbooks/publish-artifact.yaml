@@ -1,7 +1,7 @@
 - name: Download artifact
   get_url:
     url: "{{ item.url }}"
-    dest: "{{ zuul.project.src_dir }}/{{ item.job }}-deploy.tar.zstd"
+    dest: "{{ zuul.project.src_dir }}/{{ item.job }}-deploy.tar.zst"
     checksum: "sha1:{{ item.metadata.sha1 }}"
   retries: 3
   delay: 10
@@ -16,13 +16,13 @@
 
 - name: Publish file
   ansible.builtin.copy:
-    src: "{{ zuul.project.src_dir }}/{{ item.job }}-deploy.tar.zstd"
-    dest: "{{ publish_base_dir }}/{{ item.job }}/{{ item.job }}-deploy.tar.zstd"
+    src: "{{ zuul.project.src_dir }}/{{ item.job }}-deploy.tar.zst"
+    dest: "{{ publish_base_dir }}/{{ item.job }}/{{ item.job }}-deploy.tar.zst"
     remote_src: yes
     unsafe_writes: no
 
 - name: Write checksum file
   ansible.builtin.copy:
-    dest: "{{ publish_base_dir }}/{{ item.job }}/{{ item.job }}-deploy.tar.zstd.sha1sum"
+    dest: "{{ publish_base_dir }}/{{ item.job }}/{{ item.job }}-deploy.tar.zst.sha1sum"
     content: |
-      {{ item.metadata.sha1 }}  {{ item.job }}-deploy.tar.zstd
+      {{ item.metadata.sha1 }}  {{ item.job }}-deploy.tar.zst
