@@ -1,16 +1,23 @@
 - job:
     name: phosh-base
     abstract: true
-    timeout: 36000
-    run:
-      - playbooks/build-phosh.yaml
+    pre-run:
+      - playbooks/prepare-phosh.yaml
     vars:
       phosh_archive_deploy_url: https://downloads.wattissoftware.com/deploy/
       phosh_archive_deploy_dir: /mnt/cache/yocto/deploy
-    required-projects:
+    required-projects: &phosh-dependencies
       - name: poky
       - name: meta-openembedded
       - name: JPEWdev/meta-phosh
+
+- job:
+    name: phosh-build-base
+    parent: phosh-base
+    abstract: true
+    timeout: 36000
+    run:
+      - playbooks/build-phosh.yaml
     nodeset:
       nodes:
         - name: phosh-build-node
@@ -27,7 +34,7 @@
 
 - job:
     name: phosh-qemux86-64
-    parent: phosh-base
+    parent: phosh-build-base
     vars:
       phosh_machine: qemux86-64
 
@@ -42,7 +49,7 @@
 
 - job:
     name: phosh-raspberrypi4-64
-    parent: phosh-base
+    parent: phosh-build-base
     required-projects:
       - name: meta-raspberrypi
         override-checkout: master
@@ -75,3 +82,30 @@
     vars:
       publish_base_url: "https://downloads.wattissoftware.com/publish/meta-phosh/{{ zuul.branch }}/"
       publish_base_dir: "/mnt/cache/yocto/publish/meta-phosh/{{ zuul.branch }}/"
+
+- job:
+    name: phosh-recipe-upgrade
+    parent: phosh-base
+    post-review: true
+    branches: master
+    roles:
+      - zuul: JPEWdev/yocto-zuul-jobs
+    secrets:
+      - github_app
+    run:
+      - playbooks/recipe-upgrade.yaml
+    vars:
+      phosh_machine: qemux86-64
+      github_pr_branch: recipe-upgrades
+      recipe_upgrade_recipes:
+        - callaudiod
+        - feedbackd
+        - phoc
+        - phosh
+        - squeekboard
+        - umockdev
+        - usbguard
+    nodeset:
+      nodes:
+        - name: phosh-build-node
+          label: pod-ubuntu-focal-huge
