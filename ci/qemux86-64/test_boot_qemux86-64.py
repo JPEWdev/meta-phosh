@@ -24,3 +24,10 @@ def test_squeekboard(shell_command):
     output, _, _ = shell_command.run("ps")
     print("\n".join(output))
     shell_command.run_check("pidof squeekboard")
+
+
+def test_gnome_terminal(image, shell_command):
+    time.sleep(5)
+    shell_command.run_check(
+        "sudo XDG_RUNTIME_DIR=/run/user/$(id -u phosh)/ -i -u phosh gnome-terminal -- /bin/true"
+    )
