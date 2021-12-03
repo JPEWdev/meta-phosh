@@ -35,7 +35,7 @@ S = "${WORKDIR}/git"
 
 inherit meson features_check gettext gsettings systemd useradd pkgconfig
 
-REQUIRED_DISTRO_FEATURES = "wayland opengl systemd"
+REQUIRED_DISTRO_FEATURES = "wayland opengl systemd polkit"
 
 do_install:append() {
     install -Dm 644 ${S}/data/phosh.service \
