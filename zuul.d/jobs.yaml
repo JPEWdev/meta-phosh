@@ -109,3 +109,27 @@
       nodes:
         - name: phosh-build-node
           label: pod-ubuntu-focal-huge
+
+- job:
+    name: yocto-check-layer
+    timeout: 3600
+    roles:
+      - zuul: JPEWdev/yocto-zuul-jobs
+    run:
+      - playbooks/yocto-check-layer.yaml
+    vars:
+      yocto_check_layer_dependencies:
+        - "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-gnome"
+        - "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-networking"
+        - "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-oe"
+        - "{{ ansible_user_dir }}/{{ zuul.projects['git.openembedded.org/meta-openembedded'].src_dir }}/meta-python"
+      yocto_check_layer_check_dependencies: false
+      yocto_check_layer_num_cpus: 4
+    nodeset:
+      nodes:
+        - name: phosh-build-node
+          label: pod-ubuntu-focal-medium
+    required-projects:
+      - name: poky
+      - name: meta-openembedded
+      - name: JPEWdev/meta-phosh
