@@ -31,7 +31,7 @@ PACKAGECONFIG[xwayland] = "-Dxwayland=enabled,-Dxwayland=disabled,"
 
 inherit meson features_check gsettings pkgconfig
 
-REQUIRED_DISTRO_FEATURES = "wayland opengl"
+REQUIRED_DISTRO_FEATURES = "wayland opengl polkit systemd"
 
 # TODO: determine what is actually needed here
 #RDEPENDS:${PN} += "mutter-gsettings"
