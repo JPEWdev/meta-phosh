@@ -4,6 +4,10 @@
 
 Build [Phosh Shell](https://puri.sm/projects/phosh/) for OpenEmbedded
 
+Maintainers: Joshua Watt <JPEWhacker@gmail.com>, Tim Orling <ticotimo@gmail.com>
+
+Patches may be submitted by opening a [GitHub Pull Request](https://github.com/JPEWdev/meta-phosh/compare)
+
 ## Downloading
 
 Prebuilt images for Raspberry Pi 4 and QEMU (built daily) can be downloaded
