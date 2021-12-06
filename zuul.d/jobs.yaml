@@ -112,7 +112,7 @@
 
 - job:
     name: yocto-check-layer
-    timeout: 3600
+    timeout: 7200
     roles:
       - zuul: JPEWdev/yocto-zuul-jobs
     run:
