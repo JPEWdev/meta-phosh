@@ -59,6 +59,8 @@
 
       PARALLEL_MAKE = "-j 9"
       BB_NUMBER_THREADS = "9"
+      XZ_THREADS = "9"
+      ZSTD_THREADS = "9"
 
       BB_TASK_NICE_LEVEL = "10"
 
