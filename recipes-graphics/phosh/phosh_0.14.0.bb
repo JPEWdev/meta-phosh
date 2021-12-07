@@ -41,6 +41,9 @@ do_install:append() {
     install -Dm 644 ${S}/data/phosh.service \
         ${D}${systemd_system_unitdir}/phosh.service
 
+    sed -i -e '/^Environment=LANG=/d' \
+        ${D}${systemd_system_unitdir}/phosh.service
+
     install -Dm 644 ${WORKDIR}/phosh-user-override.conf \
         ${D}${systemd_system_unitdir}/phosh.service.d/phosh-user-override.conf
 
