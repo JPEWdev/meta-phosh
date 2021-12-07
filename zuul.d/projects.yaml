@@ -3,6 +3,7 @@
       jobs:
         - phosh-qemux86-64
         - phosh-raspberrypi4-64
+        - yocto-check-layer
 
     gate:
       jobs:
@@ -11,6 +12,8 @@
 
         - phosh-qemux86-64-test
         - phosh-raspberrypi4-64-test
+
+        - yocto-check-layer
 
     periodic-daily:
       jobs:
@@ -22,3 +25,5 @@
         - phosh-raspberrypi4-64-test
 
         - phosh-publish-daily
+
+        - yocto-check-layer

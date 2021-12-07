@@ -44,7 +44,9 @@ DEPENDS = " \
 # NOTE: if this software is not capable of being built in a separate build directory
 # from the source, you should replace autotools with autotools-brokensep in the
 # inherit line
-inherit pkgconfig autotools
+inherit pkgconfig autotools features_check
+
+REQUIRED_DISTRO_FEATURES = "polkit"
 
 # Specify any options you want to pass to the configure script using EXTRA_OECONF:
 EXTRA_OECONF = "--with-bundled-catch --with-bundled-pegtl"
