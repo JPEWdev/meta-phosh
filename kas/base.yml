@@ -81,3 +81,6 @@ local_conf_header:
   locales: |
     IMAGE_LINGUAS = "en-us"
 
+    IMAGE_DEFAULT_LANG = "en_US.UTF-8"
+    IMAGE_DEFAULT_KEYMAP = "us"
+    IMAGE_CLASSES += "systemd-image-locale"
