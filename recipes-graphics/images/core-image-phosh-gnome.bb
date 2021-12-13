@@ -10,6 +10,7 @@ CORE_IMAGE_BASE_INSTALL += "\
     packagegroup-phosh-essential \
     epiphany \
     packagegroup-gnome-apps \
+    tzdata \
     "
 CORE_IMAGE_BASE_INSTALL += "${@bb.utils.contains('DISTRO_FEATURES', 'x11', 'weston-xwayland', '', d)}"
 
