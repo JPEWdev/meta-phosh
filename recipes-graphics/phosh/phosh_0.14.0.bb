@@ -10,7 +10,7 @@ DEPENDS = "\
     gcr \
     glib-2.0 \
     glib-2.0-native \
-    gnome-desktop3 \
+    gnome-desktop \
     graphviz \
     gtk+3 \
     libhandy \

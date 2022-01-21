@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://${S}/COPYING;md5=d32239bcb673463ab874e80d47fae504"
 DEPENDS = "\
     glib-2.0 \
     glib-2.0-native \
-    gnome-desktop3 \
+    gnome-desktop \
     libdrm \
     libinput \
     libxkbcommon \
