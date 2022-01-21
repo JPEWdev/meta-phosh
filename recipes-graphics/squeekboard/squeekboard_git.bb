@@ -12,7 +12,7 @@ DEPENDS = "\
     feedbackd \
     glib-2.0 \
     glib-2.0-native \
-    gnome-desktop3 \
+    gnome-desktop \
     gtk+3 \
     libxkbcommon \
     wayland \
