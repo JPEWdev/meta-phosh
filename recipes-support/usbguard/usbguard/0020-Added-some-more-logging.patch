@@ -1,0 +1,55 @@
+From 034f3786082bf84563907254ebae05ff50eb103a Mon Sep 17 00:00:00 2001
+From: Tobias Mueller <muelli@cryptobitch.de>
+Date: Sun, 7 Mar 2021 22:01:28 +0100
+Subject: [PATCH] Added some more logging
+
+---
+ src/DBus/DBusBridge.cpp                 | 2 ++
+ src/Library/DeviceManagerPrivate.cpp    | 1 +
+ src/Library/public/usbguard/RuleSet.cpp | 1 +
+ 3 files changed, 4 insertions(+)
+
+diff --git a/src/DBus/DBusBridge.cpp b/src/DBus/DBusBridge.cpp
+index 82208ba..a06938a 100644
+--- a/src/DBus/DBusBridge.cpp
++++ b/src/DBus/DBusBridge.cpp
+@@ -162,6 +162,7 @@ namespace usbguard
+   void DBusBridge::handleDevicesMethodCall(const std::string& method_name, GVariant* parameters,
+     GDBusMethodInvocation* invocation)
+   {
++    USBGUARD_LOG(Debug) << "dbus devices method call: " << method_name;
+     if (method_name == "listDevices") {
+       const char* query_cstr = nullptr;
+       g_variant_get(parameters, "(&s)", &query_cstr);
+@@ -199,6 +200,7 @@ namespace usbguard
+       uint32_t target_integer = 0;
+       gboolean permanent = false;
+       g_variant_get(parameters, "(uub)", &device_id, &target_integer, &permanent);
++      USBGUARD_LOG(Debug) << "DBus: applyDevicePolicy: Parsed device_id: " << device_id << " target_integer: " << target_integer << " and permanent: " << permanent;
+       const Rule::Target target = Rule::targetFromInteger(target_integer);
+       const uint32_t rule_id = applyDevicePolicy(device_id, target, permanent);
+       g_dbus_method_invocation_return_value(invocation, g_variant_new("(u)", rule_id));
+diff --git a/src/Library/DeviceManagerPrivate.cpp b/src/Library/DeviceManagerPrivate.cpp
+index 308df7a..73f84fd 100644
+--- a/src/Library/DeviceManagerPrivate.cpp
++++ b/src/Library/DeviceManagerPrivate.cpp
+@@ -117,6 +117,7 @@ namespace usbguard
+       return _device_map.at(id);
+     }
+     catch (...) {
++      USBGUARD_LOG(Debug) << "Lookup error: " << id;
+       throw Exception("Device lookup", "device id", "id doesn't exist");
+     }
+   }
+diff --git a/src/Library/public/usbguard/RuleSet.cpp b/src/Library/public/usbguard/RuleSet.cpp
+index f534242..9f681a1 100644
+--- a/src/Library/public/usbguard/RuleSet.cpp
++++ b/src/Library/public/usbguard/RuleSet.cpp
+@@ -72,6 +72,7 @@ namespace usbguard
+   uint32_t RuleSet::appendRule(const Rule& rule, uint32_t parent_id, bool lock)
+   {
+     std::unique_lock<std::mutex> op_lock(_op_mutex, std::defer_lock);
++    USBGUARD_LOG(Debug) << "appendRule parent:" << parent_id;
+ 
+     if (lock) {
+       op_lock.lock();

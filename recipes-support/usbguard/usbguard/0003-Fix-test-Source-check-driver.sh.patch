@@ -1,0 +1,22 @@
+From 3472da7c4da31aaaf7dc5c42bfd24c792f93aac5 Mon Sep 17 00:00:00 2001
+From: Zoltan Fridrich <zfridric@redhat.com>
+Date: Fri, 12 Feb 2021 12:21:41 +0100
+Subject: [PATCH] Fix test Source/check-driver.sh
+
+---
+ src/Tests/Source/check-driver.sh | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/Tests/Source/check-driver.sh b/src/Tests/Source/check-driver.sh
+index 51127c0..c13d911 100755
+--- a/src/Tests/Source/check-driver.sh
++++ b/src/Tests/Source/check-driver.sh
+@@ -39,6 +39,8 @@ GLOB_EXCLUDE=(
+ *ThirdParty/*
+ *build/*
+ *m4/*
++*.pb.*
++*build-config.h
+ )
+ 
+ ##################
