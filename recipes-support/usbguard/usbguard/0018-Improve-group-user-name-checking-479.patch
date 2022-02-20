@@ -1,0 +1,103 @@
+From b15ef713a9ac47e84525bbf829c7f444b84c3c81 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Zolt=C3=A1n=20Fridrich?= <zfridric@redhat.com>
+Date: Thu, 8 Jul 2021 11:45:14 +0200
+Subject: [PATCH] Improve group/user name checking (#479)
+
+---
+ src/Common/Utility.cpp                    | 26 +++++++++++++++++++++++
+ src/Common/Utility.hpp                    |  9 ++++++++
+ src/Library/public/usbguard/IPCServer.cpp |  6 ++----
+ src/Library/public/usbguard/IPCServer.hpp |  6 +++---
+ 4 files changed, 40 insertions(+), 7 deletions(-)
+
+diff --git a/src/Common/Utility.cpp b/src/Common/Utility.cpp
+index c435535..aee50ce 100644
+--- a/src/Common/Utility.cpp
++++ b/src/Common/Utility.cpp
+@@ -542,6 +542,32 @@ namespace usbguard
+     std::sort(rulefile_list.begin(), rulefile_list.end());
+     return rulefile_list;
+   }
++
++  bool isValidName(const std::string& name)
++  {
++    const char* s = name.data();
++
++    if (('\0' == *s) ||
++      !((('a' <= *s) && ('z' >= *s)) ||
++        (('A' <= *s) && ('Z' >= *s)) ||
++        ('_' == *s))) {
++      return false;
++    }
++
++    while ('\0' != *++s) {
++      if (!((('a' <= *s) && ('z' >= *s)) ||
++          (('A' <= *s) && ('Z' >= *s)) ||
++          (('0' <= *s) && ('9' >= *s)) ||
++          ('_' == *s) ||
++          ('-' == *s) ||
++          (('$' == *s) && ('\0' == *(s + 1))))) {
++        return false;
++      }
++    }
++
++    return true;
++  }
++
+ } /* namespace usbguard */
+ 
+ /* vim: set ts=2 sw=2 et */
+diff --git a/src/Common/Utility.hpp b/src/Common/Utility.hpp
+index 4e90364..3d0abe8 100644
+--- a/src/Common/Utility.hpp
++++ b/src/Common/Utility.hpp
+@@ -316,6 +316,15 @@ namespace usbguard
+     return ss.str();
+   }
+ 
++  /**
++   * @brief Checks whether a given name is a valid group/user name
++   *
++   * User/group names must match [A-Za-z_][A-Za-z0-9_-]*[$]
++   *
++   * @param name Name to check
++   * @return True if given name is valid, false otherwise
++   */
++  bool isValidName(const std::string& name);
+ 
+ } /* namespace usbguard */
+ 
+diff --git a/src/Library/public/usbguard/IPCServer.cpp b/src/Library/public/usbguard/IPCServer.cpp
+index e09de44..c7f700f 100644
+--- a/src/Library/public/usbguard/IPCServer.cpp
++++ b/src/Library/public/usbguard/IPCServer.cpp
+@@ -36,10 +36,8 @@ namespace usbguard
+       throw Exception("IPC access control", "name too long", name);
+     }
+ 
+-    const std::string valid_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_";
+-
+-    if (name.find_first_not_of(valid_chars) != std::string::npos) {
+-      throw Exception("IPC access control", "name contains invalid character(s)", name);
++    if (!isValidName(name)) {
++      throw Exception("IPC access control", "invalid name format", name);
+     }
+   }
+ 
+diff --git a/src/Library/public/usbguard/IPCServer.hpp b/src/Library/public/usbguard/IPCServer.hpp
+index aa13e6b..926b39b 100644
+--- a/src/Library/public/usbguard/IPCServer.hpp
++++ b/src/Library/public/usbguard/IPCServer.hpp
+@@ -50,9 +50,9 @@ namespace usbguard
+     /**
+      * @brief Checks whether given name is a valid access control name.
+      *
+-     * Name is a valid access control name if and only if:
+-     *  1. name is not longer then 32 characters.
+-     *  2. name consists only from characters from set { A-Z, a-z, 0-9, _ }.
++     * Name is a valid access control name iff:
++     *  1. it is not longer then 32 characters
++     *  2. it matches regex [A-Za-z_][A-Za-z0-9_-]*[$]
+      *
+      * @param name Name to be verified.
+      * @throw Exception If \p name is not a valid access control name.

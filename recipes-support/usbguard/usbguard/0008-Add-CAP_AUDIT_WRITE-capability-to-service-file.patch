@@ -1,0 +1,23 @@
+From 04ab8aebaad38c3105bf5e770265197586405e44 Mon Sep 17 00:00:00 2001
+From: Cropi <alakatos@redhat.com>
+Date: Wed, 17 Mar 2021 15:17:03 +0100
+Subject: [PATCH] Add CAP_AUDIT_WRITE capability to service file
+
+It must be specified, otherwise LinuxAudit won't work as AuditBackend
+---
+ usbguard.service.in | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/usbguard.service.in b/usbguard.service.in
+index 2ec8c63..c618618 100644
+--- a/usbguard.service.in
++++ b/usbguard.service.in
+@@ -5,7 +5,7 @@ Documentation=man:usbguard-daemon(8)
+ 
+ [Service]
+ AmbientCapabilities=
+-CapabilityBoundingSet=CAP_CHOWN CAP_FOWNER
++CapabilityBoundingSet=CAP_CHOWN CAP_FOWNER CAP_AUDIT_WRITE
+ DevicePolicy=closed
+ ExecStart=%sbindir%/usbguard-daemon -f -s -c %sysconfdir%/usbguard/usbguard-daemon.conf
+ IPAddressDeny=any

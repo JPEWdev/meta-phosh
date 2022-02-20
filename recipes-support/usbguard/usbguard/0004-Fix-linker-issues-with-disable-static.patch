@@ -1,0 +1,50 @@
+From 9ebaffacf4d7513f86bce390ac2af1e75afda3e9 Mon Sep 17 00:00:00 2001
+From: Zoltan Fridrich <zfridric@redhat.com>
+Date: Thu, 11 Feb 2021 13:52:39 +0100
+Subject: [PATCH] Fix linker issues with disable-static
+
+---
+ src/Tests/Unit/test_UEvent.cpp                   | 2 +-
+ src/Tests/Unit/test_UEventParser.cpp             | 2 +-
+ src/Tests/Unit/test_UMockdevDeviceDefinition.cpp | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/src/Tests/Unit/test_UEvent.cpp b/src/Tests/Unit/test_UEvent.cpp
+index d03738f..759ee2c 100644
+--- a/src/Tests/Unit/test_UEvent.cpp
++++ b/src/Tests/Unit/test_UEvent.cpp
+@@ -17,7 +17,7 @@
+ // Authors: Daniel Kopecek <dkopecek@redhat.com>
+ //
+ #include <catch.hpp>
+-#include <UEvent.hpp>
++#include <UEvent.cpp>
+ 
+ using namespace usbguard;
+ 
+diff --git a/src/Tests/Unit/test_UEventParser.cpp b/src/Tests/Unit/test_UEventParser.cpp
+index 225baf0..cefbc3b 100644
+--- a/src/Tests/Unit/test_UEventParser.cpp
++++ b/src/Tests/Unit/test_UEventParser.cpp
+@@ -17,7 +17,7 @@
+ // Authors: Daniel Kopecek <dkopecek@redhat.com>
+ //
+ #include <catch.hpp>
+-#include <UEvent.hpp>
++#include <UEventParser.cpp>
+ 
+ using namespace usbguard;
+ 
+diff --git a/src/Tests/Unit/test_UMockdevDeviceDefinition.cpp b/src/Tests/Unit/test_UMockdevDeviceDefinition.cpp
+index e611b7a..fbe8bbd 100644
+--- a/src/Tests/Unit/test_UMockdevDeviceDefinition.cpp
++++ b/src/Tests/Unit/test_UMockdevDeviceDefinition.cpp
+@@ -17,7 +17,7 @@
+ // Authors: Daniel Kopecek <dkopecek@redhat.com>
+ //
+ #include <catch.hpp>
+-#include <UMockdevDeviceDefinition.hpp>
++#include <UMockdevDeviceDefinition.cpp>
+ 
+ #include "test_UMockdevDeviceDefinition.data.hpp"
+ 

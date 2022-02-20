@@ -13,7 +13,7 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=d32239bcb673463ab874e80d47fae504"
 
 SRC_URI = "git://gitlab.com/mobian1/callaudiod.git;protocol=https"
 
-SRCREV = "c9550e17e6e26802dda23c6070d100aca0cc2810"
+SRCREV = "4cb8bd9d228d13ea67e79f4c37c674f412b32d20"
 
 S = "${WORKDIR}/git"
 
